@@ -1,0 +1,116 @@
+            seq2seq-RNN  
+             & 0.270$\to$0.269 & 0.528$\to$0.528& 0.561$\to$0.561 & 0.824$\to$0.824 &\textbf{0.331}$\to$\textbf{0.336}& 0.603$\to$0.603\\
+            Vinyals-RNN-uniform  
+             & \textbf{0.279}$\to$\textbf{0.288}& \textbf{0.527}$\to$\textbf{0.537}& \textbf{0.578}$\to$\textbf{0.587}& \textbf{0.826}$\to$\textbf{0.833}& \textbf{0.313}$\to$\textbf{0.336}& \textbf{0.567}$\to$\textbf{0.585}\\
+             Vinyals-RNN-sample
+            & \textbf{0.300}$\to$\textbf{0.303} & \textbf{0.531}$\to$\textbf{0.537} & \textbf{0.590}$\to$\textbf{0.597} & \textbf{0.828}$\to$\textbf{0.833} & \textbf{0.339}$\to$\textbf{0.351} & \textbf{0.597}$\to$\textbf{0.602} \\
+            Vinyals-RNN-max
+            & \textbf{0.293}$\to$\textbf{0.301} & \textbf{0.530}$\to$\textbf{0.535} & 0.588$\to$0.585 & \textbf{0.829}$\to$\textbf{0.830} & \textbf{0.343}$\to$\textbf{0.352} & \textbf{0.599}$\to$\textbf{0.604} \\
+            Vinyals-RNN-max-direct
+             & \textbf{0.226}$\to$\textbf{0.228}& \textbf{0.518}$\to$\textbf{0.519}& 0.539$\to$0.538& 0.808$\to$0.808& \textbf{0.313}$\to$\textbf{0.316}& \textbf{0.583}$\to$\textbf{0.584}\\
+             
+
+\begin{table*}[ht]
+	\begin{center}
+		\begin{tabular}{|l|cc|cc|cc|}
+			\hline
+			\multirow{2}{*}{Methods}	&  
+             \multicolumn{2}{c|}{Slashdot}&\multicolumn{2}{c|}{RCV1-v2}&\multicolumn{2}{c|}{TheGuardian} \\
+             \cline{2-7}
+           & label-F1 & instance-F1  & label-F1 & instance-F1 & label-F1 & instance-F1\\
+
+                        \hline
+
+            BR
+            & 0.271 & 0.484 & 0.486 & 0.802 &0.292 & 0.572 \\
+            BR-support
+            & 0.247 & 0.516 & 0.486 & 0.805 &0.296 & 0.594 \\
+            PCC 
+            & 0.279 & 0.480 & 0.595 & 0.818 &- & - \\
+            seq2seq-RNN  
+             & 0.270 & 0.528 & 0.561 & 0.824 &0.331 & 0.603 \\
+            Vinyals-RNN-uniform 
+             & 0.279 & 0.527 & 0.578 & 0.826 & 0.313 & 0.567 \\
+            Vinyals-RNN-sample
+            & 0.300 & 0.531 & 0.590 & 0.828 & 0.339 & 0.597 \\
+                        Vinyals-RNN-max
+            & 0.293 & 0.530 & 0.588 & 0.829 & 0.343 & 0.599 \\
+            Vinyals-RNN-max-direct
+             & 0.226 & 0.518 & 0.539 & 0.808 & 0.313 & 0.583 \\
+            set-RNN 
+             & \textbf{0.310} & \textbf{0.538} & \textbf{0.607} & \textbf{0.838}  &\textbf{0.361} & \textbf{0.607} \\
+            \hline
+
+		\end{tabular}
+        \newline
+        \vspace*{0.1 cm}
+        \newline
+		\begin{tabular}{|l|cccc|}
+			\hline
+			\multirow{2}{*}{Methods}	&  
+             \multicolumn{4}{c|}{AAPD} \\
+             \cline{2-5}
+           & label-F1 & instance-F1 & Hamming-Loss & Micro-F1 \\
+
+                        \hline
+
+            BR
+            & - & - & 0.0316 & 0.646  \\
+            PCC 
+            & - & - & 0.0306 & 0.651 \\
+            seq2seq-RNN  
+             & 0.510 & 0.708 & 0.0254 & 0.701 \\
+            Vinyals-RNN-uniform 
+             & 0.532 & 0.721 & 0.0241 & 0.711 \\
+            Vinyals-RNN-max
+            & 0.535 & 0.709 & 0.0256 & 0.700 \\
+            SGM
+            & - & - & 0.0245 & 0.710 \\
+            set-RNN 
+             & \textbf{0.548} & \textbf{0.731} & \textbf{0.0241} & \textbf{0.720} \\
+            \hline
+
+		\end{tabular}
+	\end{center}
+	\caption{Comparison of different approaches. PCC experiment could not finish on TheGuardian dataset. For \emph{hamming loss}, the lower the value is, the better the model performs. %\kechen{cardinality analysis, V's method can't perform well on Guardian. why?}
+    }\label{tab:main}
+\end{table*}
+
+
+
+
+
+\begin{table*}[ht]
+  \begin{center}
+    \begin{tabular}{|l|cc|cc|cc|}
+      \hline
+      \multirow{2}{*}{Methods}  &  
+             \multicolumn{2}{c|}{Slashdot}&\multicolumn{2}{c|}{RCV1-v2}&\multicolumn{2}{c|}{TheGuardian} \\
+             \cline{2-7}
+           & label-F1 & instance-F1  & label-F1 & instance-F1 & label-F1 & instance-F1\\
+
+                        \hline
+
+ %           \textsc{PCC\_ensemble}  
+ %           &0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 \\
+
+
+            seq2seq-RNN  
+             & 0.270$\to$0.269 & 0.528$\to$0.528& 0.561$\to$0.561 & 0.824$\to$0.824 &\textbf{0.331}$\to$\textbf{0.336}& 0.603$\to$0.603\\
+            Vinyals-RNN-uniform  
+             & \textbf{0.279}$\to$\textbf{0.288}& \textbf{0.527}$\to$\textbf{0.537$\ast$}& \textbf{0.578}$\to$\textbf{0.587}& \textbf{0.826}$\to$\textbf{0.833}& \textbf{0.313}$\to$\textbf{0.336$\ast$}& \textbf{0.567}$\to$\textbf{0.585$\ast$}\\
+             Vinyals-RNN-sample
+            & \textbf{0.300}$\to$\textbf{0.303} & \textbf{0.531}$\to$\textbf{0.537} & \textbf{0.590}$\to$\textbf{0.597} & \textbf{0.828}$\to$\textbf{0.833} & \textbf{0.339}$\to$\textbf{0.351$\ast$} & \textbf{0.597}$\to$\textbf{0.602} \\
+            Vinyals-RNN-max
+            & \textbf{0.293}$\to$\textbf{0.301} & \textbf{0.530}$\to$\textbf{0.535} & 0.588$\to$0.585 & \textbf{0.829}$\to$\textbf{0.830} & \textbf{0.343}$\to$\textbf{0.352} & \textbf{0.599}$\to$\textbf{0.604} \\
+            Vinyals-RNN-max-direct
+             & \textbf{0.226}$\to$\textbf{0.228}& \textbf{0.518}$\to$\textbf{0.519}& 0.539$\to$0.538& 0.808$\to$0.808& \textbf{0.313}$\to$\textbf{0.316}& \textbf{0.583}$\to$\textbf{0.584}\\
+            
+            set-RNN 
+             & \textbf{0.297}$\to$\textbf{0.310$\ast$} & \textbf{0.528}$\to$\textbf{0.538$\ast$} & \textbf{0.593}$\to$\textbf{0.607$\ast$} & \textbf{0.831}$\to$\textbf{0.838} &\textbf{0.349}$\to$\textbf{0.361$\ast$} & \textbf{0.595}$\to$\textbf{0.607$\ast$}\\\hline
+
+    \end{tabular}
+  \end{center}
+  \caption{Predicting the most probable sequence vs predicting the most probable set. Numbers before the arrow: predicting the most probable sequence. Numbers after the arrow: predicting the most probable set. \kechen{We highlight scores which get improved in \textbf{bold}, and with $\ast$ ().}
+    }\label{table_prediction}
+\end{table*}

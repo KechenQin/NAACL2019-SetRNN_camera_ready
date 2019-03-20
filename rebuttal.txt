@@ -1,0 +1,33 @@
+We thank reviewers for their time and comments.
+
+REV2 [rare label performance when standard RNN is inverse label order]: Intuitively we believe that predicting rare/difficult labels first is harder, and also that making mistakes early in the sequence is more damaging to performance overall. A main point of our model is that rare/difficult labels are easier to predict when other popular/easy labels are already predicted, and thus offer context. In any case, our method performs better on rare labels (Guardian label F1 = 0.292) than inverse RNN (Guardian label F1 = 0.251).
+
+REV2 [training cost] : The reviewer is correct in that our method takes more time than vanilla-RNN, in fact by a factor of 1.5*K. "K" because there are K permutations for each datapoint, and 1.5 (approximatively) because each epoch requires one more forward pass. However, the comparisons done in the paper against state of the art RNN, are fair on performance and run time: the baselines also use K* more permutations per datapoint, so compare to these our methosd is only 1.5 (or so) slower.
+
+REV2 [the influence of randomness/sampling in RNN model]: only Vinyals-RNN-sample has a sampling step. Other RNN models don't have any randomness. Beam search is actually deterministoic, so there is actually very little randomness involved.
+
+
+
+REV2 [performance for frequent labels}:  We did not observe a significant improvement on frequent labels, but that is as expected. In practice, the frequent labels can be predicted pretty much with a binary relevant model that ignores dependencies, it is the rare ones that are hard. We did observe a correlation between performance gap and the frequency: the lower the frequency, the bigger the improvement.
+
+
+REV2 [search over all possible combinations of label permutations]: Correct, and actually how it works: when the permutations are fewer than K, the beam search becomes exhaustive search (both training and testing). We'll make this more clear. 
+
+
+REV3 [applied only sequential data]: There is no sequential purpose here, in fact our contribution is to make sequence models work for sets (that is sets without a particular order) 
+
+REV3 [technical improvements are small]: we proposed a well-grounded refined objective for sets (eq 5), a beam search designed for sets, and the engineering to make it work on multilabel-data.
+
+REV3 [don't understand Algorithma 1,3 – RNN_beam_search]: We agree that it can be clarified. But beam search definitely is happening. 
+It is not that each sequence is grown independently. Instead here what is happening in Algorithm 1 inside main while loop (line 2):
+- We have with K input sequences grown to size a ceratin size 
+- we generate for each sequence without STOP L candidates of grown-by-1 sequences. So we have now up to K*L candidates 
+- pick the best K of them for the next round.
+We modify standard beam search to not repeat labels (line 6) 
+
+REV3 [not defined x in 'Mapping Sequence to Sets' section"]: "x" is defined in the introduction twice as "a document" or "instance"", and in the Algorithm 1, common in machine learning literature
+
+REV3 [how to came up with our objective?"] : objective is explained both conceptually and mathematically in section "Adapting RNN Sequence Prediction Model to
+Multi-label Set Prediction", subsection "Training by Maximizing Set Probability", and equation (5). We think the derivation of sets objective from sequences is an imprtnat contribution
+
+REV3 [Acknowledge rebuttal = YES] Thats impossible, as our rebuttal was not written at that time.

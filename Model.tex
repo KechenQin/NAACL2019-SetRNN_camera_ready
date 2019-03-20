@@ -1,0 +1,185 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Adapting RNN Sequence Prediction Model to Multi-label Set Prediction}
+\label{sec:Model}
+
+We propose a new way of adapting RNN to multi-label set prediction, which we call \emph{set-RNN}. We appreciate the RNN model structure (defines a probability distribution over all possible sequences directly) and introduce training and prediction objectives tailored for sets that take advantage of it, while making a clear distinction between the sequence probability $p(\mathbf{s}|x)$ and the set probability $p(\mathbf{y}|x)$. 
+% We notice that previous work either lack an explicit definition of set probability, or use sequence probability as the set probability, or transform sequence probability into set probability in an ad hoc way. 
+% We notice that while the idea of using RNN for multi-label prediction has a lot of advantages and potentials, the existing adaptations of RNN to set prediction task are not well justified and have several issues.
+ % In the literature, these two are often used interchangeably.
+ % A standard RNN model only defines a probability distribution over all possible sequences directly, as mentioned earlier.
+  We define the set probability as the sum of sequences probabilities for all sequence permutations of the set, namely $p(\mathbf{y}|x)=\sum_{\mathbf{s}\in \pi(\mathbf{y})} p(\mathbf{s}|x)$. Based on this formulation, an RNN also defines a probability distribution over all possible sets indirectly since $\sum_{\mathbf{y}} p(\mathbf{y}|x)=\sum_{\mathbf{y}}\sum_{\mathbf{s}\in \pi(\mathbf{y})} p(\mathbf{s}|x)=\sum_{\mathbf{s}} p(\mathbf{s}|x)=1$. In standard maximum likelihood training, one wishes to maximize the likelihood of given label sets, namely, $\prod_{n=1}^N p(\mathbf{y}^{(n)}|x^{(n)})=\prod_{n=1}^N \sum_{\mathbf{s}\in \pi(\mathbf{y}^{(n)})} p(\mathbf{s}|x^{(n)})$, or equivalently, 
+\begin{align}
+\maximize \sum_{n=1}^N \log \sum_{\mathbf{s}\in \pi(\mathbf{y}^{(n)})} p(\mathbf{s}|x^{(n)})
+\label{eq:right_obj}
+\end{align}
+  % Having this clearly defined set probability is critical for our formulation as it naturally leads to our training and prediction methods.
+
+% PCC... Recently, deep structured networks such as recurrent (RNN) neural networks have become increasingly popular in multi-label classification domain. Especially, it shows a great success in image multi-label classification. On the other hand, for text data, due to RNNs' ability to capture input dependency, they can be used to both encode words into a document representation, and then decode the document representation into labels sequentially. This is the so-called encoder-decoder structure\cite{DBLP:conf/emnlp/ChoMGBBSB14}. \newcite{DBLP:conf/nips/NamMKF17} apply encoder-decoders on text multilabel classification. Their experimental results show that the encoder-decoders can achieve very good performance on low cardinality text dataset by ordering the positive labels using frequency.
+
+% \subsection{Proposed Method}
+
+
+\subsection{How is our new formulation different?}
+
+This training objective (\ref{eq:right_obj}) looks similarly to the objective (\ref{eq:wrong_obj}) considered in previous work \cite{vinyals2015order}, but in fact they correspond to very different transformations. Under the maximum likelihood framework, our objective (\ref{eq:right_obj}) corresponds to the transformation $p(\mathbf{y}|x)=\sum_{\mathbf{s}\in \pi(\mathbf{y})} p(\mathbf{s}|x)$, while objective (\ref{eq:wrong_obj}) corresponds to the transformation $p(\mathbf{y}|x)=\prod_{\mathbf{s}\in \pi(\mathbf{y})} p(\mathbf{s}|x)$. The latter transformation does not define a valid probability distribution over $\mathbf{y}$ (i.e., $\sum_{\mathbf{y}} p(\mathbf{y}|x)\neq 1$), and it has an undesired  consequence in practical model training: because of the multiplication operation, the RNN model has to assign equally high probabilities to all sequence permutations of the given label set in order to maximize the set probability. If only some sequence permutations receive high probabilities while others receive low probabilities, the set probability will still be low. In other words, if for each document, RNN finds one  good way of ordering relevant labels (such as hierarchically) and allocates most of the probability mass to the sequence in that order, the model will be penalized heavily.  As a consequence the model has little freedom in discovering and concentrating on some natural label order. In contrast, with our proposed training objective, in which the multiplication operation is replaced by the  summation operation, it suffices to find only one reasonable permutation of the labels for each document. \emph{Different documents can have different label orders}; thus our proposed training objective gives the RNN model far more freedom on label order. The other two objectives (\ref{eq:max_obj}) and (\ref{eq:sample_obj}) proposed in \cite{vinyals2015order} are less restrictive than  (\ref{eq:wrong_obj}), but they have to work in conjunction with (\ref{eq:wrong_obj}) because of the self reinforcement issue. Our proposed training objective has a natural probabilistic interpretation, does not suffer from self reinforcement issue and can serve as a stand alone training objective. 
+% Another approach used in previous work, which is to pick one fixed sequence order (e.g., by label frequency) in advance, forces the model to only assign high probabilities to sequences in that order.
+% , and therefore does not leave any opportunity for the model to explore label orders. Since in multi-label data, labels often do not have an obvious ordering and human heuristics are often suboptimal, it is advantageous to let the training procedure discover label orderings, on a per sample basis.
+% \subsection{A Brief Review of RNN and Attention}
+
+\begin{algorithm}
+    \SetKwInOut{Input}{Input}
+    \SetKwInOut{Output}{Output}
+
+    % \underline{function Beam\_Search\_for\_Given\_Set} $(\mathbf{y},m)$\;
+    \Input{Instance $x$ \\
+    Subset of labels considered $G\subset \mathcal{L}$\\
+    Boolean flag $ALL$: 1 if sequences must contain all $G$ labels; 0 if partial sequences are allowed }
+    \Output{A list of top sequences and the associated probabilities} 
+    Let $\mathbf{s}_1$,$\mathbf{s}_2$,...,$\mathbf{s}_K$ be the top $K$ sequences  found so far. Initially, all $K$ sequences are empty. $\oplus$ means concatenation. \\
+    % Let $C$ be the set of candidate sequences, initially empty.\\
+    \While {true}{
+     // Step 1: Generate Candidate Sequences from each existing sequence $s_k \in K$ and all possible new labels $l \in G\setminus s_k$:\\
+    Expand all non-stopped sequences:\\
+     $C = \{ \mathbf{s}_k\oplus l | l\in G,  l \notin s_k, STOP \notin s_k \}$\\
+Include stopped sequences:\\
+    $C = C \cup \{ \mathbf{s}_k | STOP \in s_k \}$\\
+    Terminate non-stopped sequences:\\
+    \If{$ALL==0$}{
+    % Add $\mathbf{s}_k\oplus STOP$ to $C$  }
+    %
+    $C =C \cup \{ \mathbf{s}_k\oplus STOP | STOP \notin s_k \}$
+    }
+
+
+    %         \For {each sequence $\mathbf{s}_k$ that does not end with $STOP$}{
+    % Add to $C$ all possible new candidate sequences in the form $\mathbf{s}_k\oplus l$, where $l$ is a label in $G$ but not in $\mathbf{s}_k$, and $\oplus$ stands for concatenation.\\
+    % \If{CONTAIN\_ALL=FALSE}{Add $\mathbf{s}_k\oplus STOP$ to $C$  }
+    % }
+    % \For {each sequence $\mathbf{s}_k$ that ends with $STOP$}{
+    % Add $\mathbf{s}_k$  to $C$
+    % }
+
+ // Step 2: Select highest probabilities sequences from candidate set $C$\\
+    % From the candidate set $C$ generated by all $\mathbf{s}_k$ in Step 1, select the top $K$ candidates with the highest probabilities and use them as new values for $\mathbf{s}_1$,$\mathbf{s}_2$,...,$\mathbf{s}_K$\\
+    $K$
+    % = \{$\mathbf{s}_1$,$\mathbf{s}_2$,...,$\mathbf{s}_K$\}
+    =  topK-argmax$_k \{\text{prob}[s_k] | s_k \in C\}$\\
+    \If {all top $K$ sequences end with $STOP$ or contain all labels in $G$}{
+    Terminate the algorithm}
+
+        % \tcp{Prune sequence list to }
+        % $s \leftarrow s_{ij}[:k_3]$
+     }
+    \Return{sequence list $\mathbf{s}_1$,$\mathbf{s}_2$,...,$\mathbf{s}_K$ and the associated probabilities}
+    \caption{Beam\_Search}
+    \label{alg:beam_combine}
+\end{algorithm}
+
+\subsection{Training by Maximizing Set Probability}
+Training an RNN model with the proposed objective (\ref{eq:right_obj}) requires summing up $|\mathbf{y}|!$  sequence probabilities for a set $\mathbf{y}$, where $|\mathbf{y}|$ is the cardinality of the set.  Thus evaluating this objective exactly can be intractable. We can approximate this sum by only considering the top $K$ high probability sequences produced by the RNN model. We introduce a variant of beam search for sets with width $K$ and with the search candidates in each step restricted to only labels in the set (see Algorithm~\ref{alg:beam_combine}). This approximate inference procedure is carried out repeatedly before each batch training step, in order to find high probability sequences for all training instances occurring in that batch. The overall training procedure is summarized in Algorithm \ref{alg:train_beam}.% \cheng{add pseudo code}
+
+\begin{algorithm}
+    \SetKwInOut{Input}{Input}
+    \SetKwInOut{Output}{Output}
+
+  %  \underline{function Euclid} $(a,b)$\;
+    \Input{Multi-label dataset $(x^{(n)},\mathbf{y}^{(n)}),n=1,2,...,N$ }
+    \Output{Trained RNN model parameters}
+    
+    % Initialize model parameters\\
+    \ForEach {epoch, batch}{
+        % \ForEach {batch }{
+            \ForEach{$(x^{n},\mathbf{y}^{n})$ in the batch}{
+                Get top $K$ sequences :\\
+		    	$\{\mathbf{s}^n_{1},...,\mathbf{s}^n_{K}, p(\mathbf{s}^n_{1}|x^n),...,p(\mathbf{s}^n_{K}|x^n)\}$=  \hspace{4ex}=Beam\_Search($(x^{n},\mathbf{y}^{n}, ALL=1$)\\
+                }
+            Update model parameters by maximizing $\sum\limits_{(x^{n},\mathbf{y}^{n}) \in \text{batch}} \log \sum\limits_{\mathbf{s}\in\{\mathbf{s}^n_{1},...,\mathbf{s}^n_{K}\}} p(\mathbf{s}|x^{n})$
+        % }
+    }
+    \caption{Training method for set-RNN}
+    \label{alg:train_beam}
+\end{algorithm}
+
+
+\subsection{Predicting the Most Probable Set}
+The transformation $p(\mathbf{y}|x)=\sum_{\mathbf{s}\in \pi(\mathbf{y})} p(\mathbf{s}|x)$ also naturally leads to a prediction procedure, which is different from the previous standard of directly using most probable sequence as a set. We instead aim to find the most likely set $\hat{\mathbf{y}}=\arg\max_{\mathbf{y}} p(\mathbf{y}|x)$, which involves summing up probabilities for all of its permutations (see Table~1). To make it tractable, we propose a two-level beam search procedure. First we run standard RNN beam search (Algorithm \ref{alg:beam_combine}) to generate a list of high probability sequences.  We then consider the label set associated with each label sequence.  For each set, we evaluate its probability using the same approximate summation procedure as the one used during model training (Algorithm~\ref{alg:beam_combine}): we run our modified beam search to find the top few high probability sequences associated with the set and sum up their probabilities. Among these sets that we have evaluated, we choose the one with the highest probability as the prediction. The overall prediction procedure is summarized in Algorithm~\ref{alg:test}. As we shall show in case study, the most probable set may not correspond to the most probable sequence; these are certainly cases where our method has an advantage.
+%\textbf{Variant of beam search.} To obtain the top high probability sequences associated with a given set, beam search
+
+
+% \begin{algorithm}
+%     \SetKwInOut{Input}{Input}
+%     \SetKwInOut{Output}{Output}
+%
+%     % \underline{function Beam\_Search\_for\_Given\_Set} $(\mathbf{y},m)$\;
+%     \Input{Instance $x$ and a set of labels $\mathbf{y}$ }
+%     \Output{A list of top sequence permutations for the given label set and the associated probabilities}
+%     Initialize $K$ empty sequences $\mathbf{s}_1$,$\mathbf{s}_2$,...,$\mathbf{s}_K$ \\
+%     \For {$t=0;\ t<len(\mathbf{y});\ t++\ $}{
+%         \For {each sequence $\mathbf{s}_k$ and each label $\ell$ in $\mathbf{y}$}{
+%         \If{sequence $\mathbf{s}_k$ does not contain $\ell$}{
+%         generate new candidate sequence by combining $\mathbf{s}_k$ and $\ell$\\
+%         }
+%
+%             % $\mathbf{y}_t = \mathbf{y} - set(s_i)$ \\
+%             % \For {$j=0;j<k_3;$}{
+%             % \tcp{$l_j$ is the $j$-th most possible label inferred at time stamp $t$}
+%             %     \If{$l_j \in \mathbf{y}_t$}{
+%             %         $s_{ij} \leftarrow s_i + l_j$\\
+%             %         $j++$\\
+%             %     }
+%             % }
+%         }
+%     Select the top $K$ sequences among all candidates with the highest probability and assign them to $\mathbf{s}_1$,$\mathbf{s}_2$,...,$\mathbf{s}_K$
+%         % \tcp{Prune sequence list to }
+%         % $s \leftarrow s_{ij}[:k_3]$
+%     }
+%     \Return{sequence list $\mathbf{s}_1$,$\mathbf{s}_2$,...,$\mathbf{s}_K$ and the associated probabilities}
+%     \caption{Beam\_Search\_for\_Given\_Set}
+%     \label{alg:beam_predict}
+% \end{algorithm}
+
+
+\begin{algorithm}
+    \SetKwInOut{Input}{Input}
+    \SetKwInOut{Output}{Output}
+
+ %   \underline{function Euclid} $(a,b)$\;
+    \Input{Instance $x$}
+    \Output{Predicted label set $\hat{\mathbf{y}}$}
+    Obtain $K$ highest probability sequences :\\
+    $\{\mathbf{s}_1,...,\mathbf{s}_{K}\}$ =  Beam\_Search((x,$\mathcal{L}, ALL=0$)\\
+    
+    Map each sequence $\mathbf{s}_k$ to the corresponding set $\mathbf{y}_k$ and remove duplicate sets (if any)
+    
+    \ForEach {$\mathbf{y}_k$}{
+        % $\hat{\mathbf{y_i}} \leftarrow set(\mathbf{s_i})$\\
+        
+         Get $K$ most probable sequences associated with $\mathbf{y}_k$ and their probabilities :\\
+	   $\{\mathbf{s'}_{1},...,\mathbf{s'}_{K}, p(\mathbf{s}'_{1}|x),...,p(\mathbf{s}'_{K}|x)\}$= \\ \hspace{6ex} =Beam\_Search((x,$\mathbf{y}_k, ALL=1$)\\
+       Set probability is approx by summing up :
+        $p({\mathbf{y}_k}|x) \approx \sum\limits_{\mathbf{s}\in \{\mathbf{s}'_{1},...,\mathbf{s}'_K\}} p(\mathbf{s}|x)$
+    }    
+    $\hat{\mathbf{y}} = argmax_{{\mathbf{y}_k}}(p({\mathbf{y}_k}|x))$
+    \caption{Prediction Method for Set-RNN}
+    \label{alg:test}
+\end{algorithm}
+
+
+%Recurrent neural network (RNN) is a class of neural network models. The key point that makes RNN different from a standard feedforward neural network model is that it contains a recurrent structure and . In this work, we first represent a text as bags of words, and pre-trained the word representation $s$ by using  word2vec\cite{DBLP:journals/corr/abs-1301-3781}. We use gated recurrent units with \textit{M} hidden layers. At the bottom layer, we feed the pre-trained label representations to the RNN, and at the \textit{k}th RNN layer, the hidden state $h_j$ is derived as:
+
+% \[ h_k^{(t)} = GRU(h_{t-1}^{(k)}, h_{t}^{(k-1)}) \]
+
+%  The final hidden layer on the network also take the encoded representation \textit{c} as context using an attention mechanism. 
+ 
+%  \[ h_k^{(t)} = RELU(GRU(h_{t-1}^{(k)}, h_{t}^{(k-1)}); c) \]
+ 
+%  Context vector \textit{c} is the weighted sum of the word representation $s$. This is similar to attention mechanism proposed by \newcite{DBLP:journals/corr/BahdanauCB14}:
+ 
+%  \[ e_{ij} = \phi(h_i, s_{j-1}) \]
+%  \[ \alpha_{ik} = \frac{exp(e_{ij})}{\sum_t exp(e_{ik})} \]
+%  \[ c_i = \sum_k \alpha_{ik}s_k \]
+
+% where $\phi$ is a feedforward affine transforms followed by a \textit{tanh} nonlinearity.
+
