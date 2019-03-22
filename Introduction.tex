@@ -8,9 +8,9 @@ which maps a document $x$ to a set of labels $\mathbf{y}\subset \mathcal{L}$. Th
 indicating the presence or absence of a label.
 
 % A key research question in multi-label text classification is how to model and leverage the dependencies among labels.
-Naively, one could predict each label independently without considering label dependencies. This approach is called Binary Relevance \cite{DBLP:journals/pr/BoutellLSB04,tsoumakas2007multi}, and is widely used  due to its simplicity, but it often does not deliver good performance.  Intuitively, knowing some labels---such as \texttt{sport} and \texttt{football}---should make it easier to predict \texttt{2018 world cup} and then \texttt{Russia}.  There are several methods that try to capture label dependencies by building a joint probability estimation over all labels  $p(\mathbf{y}=(y_1,y_2,...,y_L)|x)$ \cite{read2009classifier,li2016conditional,ghamrawi2005collective}. 
+Naively, one could predict each label independently without considering label dependencies. This approach is called Binary Relevance \cite{DBLP:journals/pr/BoutellLSB04,tsoumakas2007multi}, and is widely used  due to its simplicity, but it often does not deliver good performance.  Intuitively, knowing some labels---such as \texttt{sport} and \texttt{football}---should make it easier to predict \texttt{2018 world cup} and then \texttt{Russia}.  There are several methods that try to capture label dependencies by building a joint probability estimation over all labels  $p(\mathbf{y}=(y_1,y_2,...,y_L)|x)$ \cite{ghamrawi2005collective,read2009classifier,DBLP:conf/icml/DembczynskiCH10,li2016conditional}. 
 % \kechen{put BR before the introduction of dependency? because there is nothing about dependency by using BR} 
-The most popular approach, Probabilistic Classifier Chain (PCC) \cite{read2009classifier} learns and predicts labels one-by-one in a predefined fixed order: for each label, it uses one classifier to estimate the probability of that label given all previous labels predictions, $p(y_l|y_1,...,y_{l-1},x)$. PCC's well known drawback is that errors in early predictions tend to propagate to subsequent predictions, and can become massive when the total number of label candidates $L$ is large.
+The most popular approach, Probabilistic Classifier Chain (PCC) \cite{DBLP:conf/icml/DembczynskiCH10} learns and predicts labels one-by-one in a predefined fixed order: for each label, it uses one classifier to estimate the probability of that label given all previous labels predictions, $p(y_l|y_1,...,y_{l-1},x)$. PCC's well known drawback is that errors in early predictions tend to propagate to subsequent predictions, and can become massive when the total number of label candidates $L$ is large. \kechen{clarify PCC define set probability while RNN define sequence probability? check our email to Krzysztof}
 % since PCC has to make a decision regarding each label candidate.
 
 
@@ -36,18 +36,18 @@ Recurrent neural networks (RNN) are originally designed to output a sequential s
 % The joint prediction is usually implemented approximately with a beam search.
 
 % The input documents can be treated either as a sequence of words or a bag of words, and these words are represented by dense vectors.
-% Attention mechanism proposed by \newcite{DBLP:journals/corr/BahdanauCB14}, at each timestamp, selects important words associated with the prediction, and assign them high attention weights. After applying attention mechanism to the word representations, we can find corresponding words that are most related to the classification task and use them to predict the labels later. 
+% Attention mechanism proposed by \newcite{DBLP:journals/corr/BahdanauCB14}, at each timestep, selects important words associated with the prediction, and assign them high attention weights. After applying attention mechanism to the word representations, we can find corresponding words that are most related to the classification task and use them to predict the labels later. 
 
-% Formally, feature words extracted by attention mechanism is called $f$, and are concatenated with hidden memory $h$ maintained by the RNN. The output vector will be passed through a nonlinearity $\phi$ before being sent to the output dense layer, and then output the probability attached with each label candidate. By multiplying over the probability of output label at each timestamp $t$, the probability of the predicted label sequence can be represented as follows:
+% Formally, feature words extracted by attention mechanism is called $f$, and are concatenated with hidden memory $h$ maintained by the RNN. The output vector will be passed through a nonlinearity $\phi$ before being sent to the output dense layer, and then output the probability attached with each label candidate. By multiplying over the probability of output label at each timestep $t$, the probability of the predicted label sequence can be represented as follows:
 
 
 
-% where $[softmax()]_i$ is the $i$-th element in softmax output, and $s_t$ represents the predicted label at timestamp $t$. 
+% where $[softmax()]_i$ is the $i$-th element in softmax output, and $s_t$ represents the predicted label at timestep $t$. 
 % The whole pipeline is very similar to a machine translation, the model translate the document into a sequence of labels.
 
 %Formally, the RNN and attention is built as follows:
 
-%The model, grounded on gated recurrent units (GRU), consists of \textit{M} hidden layers, and at the \textit{k}th layer, the hidden state $h_t$ at timestamp $t$ is derived as:
+%The model, grounded on gated recurrent units (GRU), consists of \textit{M} hidden layers, and at the \textit{k}th layer, the hidden state $h_t$ at timestep $t$ is derived as:
 
 %\[ h_t^{(k)} = GRU(h_{t-1}^{(k)}, h_{t}^{(k-1)}) \]
 
@@ -59,7 +59,7 @@ Recurrent neural networks (RNN) are originally designed to output a sequential s
 
 %where $\phi_1$ is a feedforward affine transforms followed by a nonlinearity. $c$ is the weighted sum of the word representation $s$. Then $c$ is concatenated with GRU output, and passed through another nonlinearity before being sent to the final softmax output layer. 
 
-%The loss function is computed by summing up cross-entropy loss at each timestamp $t$:
+%The loss function is computed by summing up cross-entropy loss at each timestep $t$:
 
 % \[ L(x,y) = -\sum_t logP(y_t|x,y<t)\]
 
@@ -78,9 +78,9 @@ Previous work has shown that it is possible to train an RNN on multi-label data 
  % Our results on benchmark data sets demonstrate that our proposed method outperforms state-of-the-art methods for the task of multi-label set prediction.
 
 \section{Mapping Sequences to Sets} 
-In this section, we formulate how existing works map sequences to sets, by writing down their objective functions using consistent notations. To review RNN designed for sequences, let $\mathbf{s}=(s_1,s_2,...,s_T)$ be an input sequence of outcomes, in a particular order; the order is often critical to the datapoint. An RNN model defines a probability distribution over all possible output sequences given the input in the form $p(\mathbf{s}=(s_1,s_2,...,s_T)|x)=\prod_{t=1}^T p(s_t|x,s_1,s_2,...,s_{t-1})$. To train the RNN model, one maximizes the likelihood of the ground truth sequence $p(\mathbf{s}=(s_1,s_2,...,s_T)|x)$.
+\kechen{officialy define T, N, $x^{(n)}$} In this section, we formulate how existing works map sequences to sets, by writing down their objective functions using consistent notations. To review RNN designed for sequences, let $\mathbf{s}=(s_1,s_2,...,s_T)$ be an input sequence of outcomes, in a particular order; the order is often critical to the datapoint. An RNN model defines a probability distribution over all possible output sequences given the input in the form $p(\mathbf{s}=(s_1,s_2,...,s_T)|x)=\prod_{t=1}^T p(s_t|x,s_1,s_2,...,s_{t-1})$. To train the RNN model, one maximizes the likelihood of the ground truth sequence $p(\mathbf{s}=(s_1,s_2,...,s_T)|x)$.
 
-At prediction time, one seeks to find the sequence with the highest probability $\mathbf{s}^*=\arg\max_\mathbf{s} p(\mathbf{s}|x)$, and this is usually implemented approximately with a beam search procedure \cite{lowerre1976harpy} (we modified into Algorithm \ref{alg:beam_combine}). The sequence history is encoded with an internal memory vector $h_t$ which is updated over time. RNN is also often equipped with the attention mechanism \cite{DBLP:journals/corr/BahdanauCB14}, which in each  timestamp $t$ puts different weights on different words (features) and effectively attends on a list of important words $f_t$. The selected words $f_t$, the RNN memory $h_t$ at timestamp $t$, and the previous label ${s_{t-1}}$ are concatenated and used to model the label probability distribution at time $t$ as $p(s_t|x,s_1,s_2,...,s_{t-1}) \sim  \softmax(\phi(f_t,h_t,s_{t-1}))$, where $\phi$ is a non-linear function, and $\softmax$ is the normalized exponential function generalizing binary logistic regression. %Other variants of RNN, such as sequence to sequence encoder-decoder structure \cite{DBLP:conf/emnlp/ChoMGBBSB14,DBLP:conf/nips/NamMKF17}, further take into account the word order in the documents. \kechen{remove last sentence?}
+At prediction time, one seeks to find the sequence with the highest probability $\mathbf{s}^*=\arg\max_\mathbf{s} p(\mathbf{s}|x)$, and this is usually implemented approximately with a beam search procedure \cite{lowerre1976harpy} (we modified into Algorithm \ref{alg:beam_combine}). The sequence history is encoded with an internal memory vector $h_t$ which is updated over time. RNN is also often equipped with the attention mechanism \cite{DBLP:journals/corr/BahdanauCB14}, which in each  timestep $t$ puts different weights on different words (features) and effectively attends on a list of important words $f_t$. The selected words $f_t$, the RNN memory $h_t$ at timestep $t$, and the previous label ${s_{t-1}}$ are concatenated and used to model the label probability distribution at time $t$ as $p(s_t|x,s_1,s_2,...,s_{t-1}) \sim  \softmax(\phi(f_t,h_t,s_{t-1}))$, where $\phi$ is a non-linear function, and $\softmax$ is the normalized exponential function generalizing binary logistic regression. \kechen{double check attention} %Other variants of RNN, such as sequence to sequence encoder-decoder structure \cite{DBLP:conf/emnlp/ChoMGBBSB14,DBLP:conf/nips/NamMKF17}, further take into account the word order in the documents. \kechen{remove last sentence?}
 
 
 % \begin{algorithm}
@@ -107,7 +107,7 @@ At prediction time, one seeks to find the sequence with the highest probability 
 %
 %             % $\mathbf{y}_t = \mathbf{y} - set(s_i)$ \\
 %             % \For {$j=0;j<k_3;$}{
-%             % \tcp{$l_j$ is the $j$-th most possible label inferred at timestamp $t$}
+%             % \tcp{$l_j$ is the $j$-th most possible label inferred at timestep $t$}
 %             %     \If{$l_j \in \mathbf{y}_t$}{
 %             %         $s_{ij} \leftarrow s_i + l_j$\\
 %             %         $j++$\\
@@ -156,7 +156,7 @@ At prediction time, one seeks to find the sequence with the highest probability 
  \end{table*}
  
  
- To apply RNNs to multi-label problems, one has to map the given set of labels $\mathbf{y}$ to a sequence $\mathbf{s}=(s_1,s_2,...,s_T)$, on training documents. This is usually obtained by writing the label set in a globally fixed order (e.g. by label frequency), similar to PCC.
+ To apply RNNs to multi-label problems, one has to map the given set of labels $\mathbf{y}$ to a sequence $\mathbf{s}=(s_1,s_2,...,s_T)$, on training documents. This is usually obtained by writing the label set in a globally fixed order (e.g.\ by label frequency), similar to PCC.
  % After mapping the ground truth set $\mathbf{y}^{(n)}$ to a sequence $\mathbf{s}^{(n)}$ with the chosen order for each training instance $(x^{(n)},\mathbf{y}^{(n)})$,
  Once mapping is done, RNN are trained with the standard maximum likelihood objective \cite{DBLP:conf/nips/NamMKF17}: 
 \begin{align}

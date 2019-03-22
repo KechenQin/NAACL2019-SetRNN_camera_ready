@@ -1,6 +1,7 @@
 \section{Results and Analysis}
 \label{sec:results}
 \subsection{Experimental Setup}
+\kechen{I have a slight concern about the scalability of this approach, both with varying beam size and number of labels. I'm curious about the computational complexities of the training and prediction methods provided in the Algorithm 2 and Algorithm 3 and how that compares with existing methods.}
 We test our proposed set-RNN method on 4 real-world datasets, RCV1-v2, Slashdot, TheGuardian, and Arxiv Academic Paper Dataset (AAPD) \cite{DBLP:journals/corr/abs-1806-04822}. We take the public RCV1-v2 release\footnote{\scriptsize\url{http://www.ai.mit.edu/projects/jmlr/papers/volume5/lewis04a/lyrl2004_rcv1v2_README.htm}} and randomly sample 50,000 documents. We crawl Slashdot and TheGuardian documents from their websites\footnote{\scriptsize Slashdot: \url{https://slashdot.org/} Note that there is another public Slashdot multi-label dataset \cite{read2009classifier} but we do not use that one because it is quite small. TheGuardian: \url{https://www.theguardian.com}  
 } and treat the official editor tags as ground truth. We also gather a list of user tags\footnote{\scriptsize \url{www.zubiaga.org/datasets/socialbm0311/}} for each document and treat them as additional features. For AAPD dataset, we follow the same train/test split as in \cite{DBLP:journals/corr/abs-1806-04822}. Table \ref{tab:stats} contains statistics of these four datasets. 
 \begin{table}[h]
@@ -32,11 +33,11 @@ We test our proposed set-RNN method on 4 real-world datasets, RCV1-v2, Slashdot,
 
                         \hline
             BR
-            & .271 & .484 & .486 & .802 &.292 & .572 & - & - & .0316 & .646 \\
+            & .271 & .484 & .486 & .802 &.292 & .572 & .529 & .654 & .0230 & .685 \\
             BR-support
-            & .247 & .516 & .486 & .805 &.296 & .594 &-&-&-&-\\
+            & .247 & .516 & .486 & .805 &.296 & .594 & .545 & .689 & \textbf{.0228} & .696\\
             PCC 
-            & .279 & .480 & .595 & .818 &- & - & - & - & .0306 & .651 \\
+            & .279 & .480 & .595 & .818 &- & - & .541 & .688 & .0255 & .682 \\
             seq2seq-RNN  
              & .270 & .528 & .561 & .824 &.331 & .603 & .510 & .708 & .0254 & .701 \\
             Vinyals-RNN-uniform 
@@ -50,7 +51,7 @@ We test our proposed set-RNN method on 4 real-world datasets, RCV1-v2, Slashdot,
             SGM
             &-&-&-&-&-&-& - & - & .0245 & .710 \\
             set-RNN 
-             & \textbf{.310} & \textbf{.538} & \textbf{.607} & \textbf{.838}  &\textbf{.361} & \textbf{.607} & \textbf{.548} & \textbf{.731} & \textbf{.0241} & \textbf{.720}\\
+             & \textbf{.310} & \textbf{.538} & \textbf{.607} & \textbf{.838}  &\textbf{.361} & \textbf{.607} & \textbf{.548} & \textbf{.731} & .0241 & \textbf{.720}\\
             \hline
 
 		\end{tabular}
@@ -110,7 +111,7 @@ We compare our method with the following methods:
 \begin{itemize}
 	\item \textbf{Binary Relevance (BR)} \cite{tsoumakas2007multi} with both independent training and prediction;
 	\item \textbf{Binary Relevance with support inference (BR-support)} \cite{wang2017regularizing} which trains binary classifiers independently but imposes label constraints at prediction time by only considering label sets observed during training, namely $\hat{\mathbf{y}}=\arg\max_{\text{observed~}\mathbf{y}}\prod_{\ell=1}^L p(y_{\ell}|x)$;
-	\item \textbf{Probabilistic Classifier Chain (PCC)} \cite{read2009classifier} which transforms the multi-label classification task into a chain of binary classification problems.
+	\item \textbf{Probabilistic Classifier Chain (PCC)} \cite{DBLP:conf/icml/DembczynskiCH10} which transforms the multi-label classification task into a chain of binary classification problems.
     \item \textbf{Sequence to Sequence RNN (seq2seq-RNN)} \cite{DBLP:conf/nips/NamMKF17} which maps each set to a sequence by decreasing label frequency and solves the multi-label task with an RNN designed for sequence prediction (see Table \ref{tab_objs}). 
     \item \textbf{Vinyals-RNN-uniform, Vinyals-RNN-sample, and Vinyals-RNN-max} are three variants of RNNs proposed by \cite{vinyals2015order}. They are trained  with different objectives that correspond to different transformations between sets and sequences. See Table~\ref{tab_objs} for a summary of their training objectives. Following the approach taken by \cite{vinyals2015order}, Vinyals-RNN-sample and Vinyals-RNN-max are initialized by Vinyals-RNN-uniform. We have also tested training Vinyals-RNN-max directly without having Vinyals-RNN-uniform as an initialization, and we name it as  \textbf{Vinyals-RNN-max-direct}.
     \item \textbf{Sequence Generation Model (SGM)} \cite{DBLP:journals/corr/abs-1806-04822} which trains the RNN model similar to seq2seq-RNN but uses a new decoder structure that computes a weighted global embedding based on all labels as opposed to just the top one at each time step.
@@ -130,7 +131,7 @@ Table \ref{tab:main} shows the performance of different methods in terms of \emp
 % The second best method is the variant of our method without the sequence probability summation at prediction. Comparing these two, we can see the benefit of summing up sequence probabilities at prediction time (the beam search for summation step does not add much computation). 
 
  
-Our method performs the best in all metrics on all datasets. All RNN based methods perform better than traditional methods BR, BR-support and PCC. Among the Vinals-RNN variants, Vinals-RNN-max and Vinals-sample work the best and have similar performance. However, they have to be initialized by Vinals-RNN-uniform. Otherwise, the training gets stuck in early stage and the performance degrades significantly. One can see the clear degradation by comparing the Vinals-RNN-max row (with initialization) with the Vinals-RNN-max-direct row (without initialization). By contrast, our training objective in set-RNN does not suffer from this issue and can serve as a stable stand alone training objective.
+Our method performs the best in all metrics on all datasets. All RNN based methods perform better than traditional methods BR, BR-support and PCC. Among the Vinyals-RNN variants, Vinyals-RNN-max and Vinyals-sample work the best and have similar performance. However, they have to be initialized by Vinyals-RNN-uniform. Otherwise, the training gets stuck in early stage and the performance degrades significantly. One can see the clear degradation by comparing the Vinyals-RNN-max row (with initialization) with the Vinyals-RNN-max-direct row (without initialization). By contrast, our training objective in set-RNN does not suffer from this issue and can serve as a stable stand alone training objective.
 
 \begin{figure}[t]
 %\hspace{-2ex}
@@ -143,15 +144,15 @@ Our method performs the best in all metrics on all datasets. All RNN based metho
 
 On TheGuardian dataset, set-RNN performs slightly better than seq2seq-RNN in terms of instance-F1, but much better in terms of label-F1. It is known that instance-F1 is basically determined by the popular labels' performance while label-F1 is also sensitive to the performance on rare labels. Figure~\ref{fig:labelf1} shows that set-RNN predicts rare labels better than seq2seq-RNN.
 
-Next we analyze how much benefit our new set prediction strategy brings in. For each RNN-based method, we test two prediction strategies: 1) finding the sequence with the highest probability and outputting the corresponding set (this is the default prediction strategy for all models except set-RNN); 2) outputting the set with the highest probability (this is the default prediction strategy for set-RNN). Table~\ref{table_prediction} shows how each method performs with these two prediction strategies. One can see that Vinals-RNN-uniform and set-RNN benefit most from predicting the top set,  Vinals-RNN-sample, Vinals-RNN-max and Vinals-RNN-max-direct benefit less, and seq2seq RNN does not benefit at all. Intuitively, for the top-set prediction to be different from the top-sequence prediction, the model has to spread probability mass across different sequence permutations of the same set. 
+Next we analyze how much benefit our new set prediction strategy brings in. For each RNN-based method, we test two prediction strategies: 1) finding the sequence with the highest probability and outputting the corresponding set (this is the default prediction strategy for all models except set-RNN); 2) outputting the set with the \kechen{approximated} highest probability (this is the default prediction strategy for set-RNN). Table~\ref{table_prediction} shows how each method performs with these two prediction strategies. One can see that Vinyals-RNN-uniform and set-RNN benefit most from predicting the top set,  Vinyals-RNN-sample, Vinyals-RNN-max and Vinyals-RNN-max-direct benefit less, and seq2seq RNN does not benefit at all. Intuitively, for the top-set prediction to be different from the top-sequence prediction, the model has to spread probability mass across different sequence permutations of the same set. 
 
 This motivates us to check how sharply (or uniformly) distributed the probabilities are over different sequence permutations of the predicted set. We first normalize these sequence probabilities related to the predicted set and then compute the entropy. To make predictions with different set sizes (and hence different number of sequence permutations) comparable, we further divide the entropy by the logarithm of number of sequences. Smaller entropy values indicate a sharper distributions. The results are shown in Figure~\ref{fig:entropy}.
 
-seq2seq-RNN trained with fixed label order and standard RNN objective (\ref{eq:standard_rnn}) generates very sharp sequence distributions. It basically only assigns probability to one sequence in the given order. The entropy is close to 0. In this case, predicting the set is no different than predicting the top sequence (see Table~\ref{table_prediction}). On the other extreme is Vinals-RNN-uniform, trained with objective (\ref{eq:wrong_obj}), which spreads probabilities across many sequences, and leads to the highest entropy among all models tested (the uniform distribution has the max entropy of 1). From Table~\ref{table_prediction}, we see that by summing up sequence probabilities and predicting the most probable set,  Vinals-RNN-uniform's performance  improves. But as  discussed earlier, training with the objective (\ref{eq:wrong_obj}) makes it impossible for the model to discover and concentrate on a particular natural label order (represented by a sequence). Overall Vinals-RNN-uniform is not competitive even with the set-prediction enhancement. Between the above two extremes are Vinals-RNN-max and set-RNN (we have omitted Vinals-RNN-sample and Vinals-RNN-max-direct here as they are similar to Vinals-RNN-max). Both models are allowed to assign probability mass to a subset of sequences. Vinals-RNN-max produces sharper sequence distributions than set-RNN, because  Vinals-RNN-max has the incentive to allocate most of the probability mass to the most probable sequence due the max operator in its training objective (\ref{eq:max_obj}). From Table~\ref{table_prediction}, one can see that set-RNN clearly benefits from summing up sequence probabilities and predicting the most probable set while Vinals-RNN-max does not benefit much. Therefore, the sequence probability summation is best used in both training and prediction, as in our proposed method.
+seq2seq-RNN trained with fixed label order and standard RNN objective (\ref{eq:standard_rnn}) generates very sharp sequence distributions. It basically only assigns probability to one sequence in the given order. The entropy is close to 0. In this case, predicting the set is no different than predicting the top sequence (see Table~\ref{table_prediction}). On the other extreme is Vinyals-RNN-uniform, trained with objective (\ref{eq:wrong_obj}), which spreads probabilities across many sequences, and leads to the highest entropy among all models tested (the uniform distribution has the max entropy of 1). From Table~\ref{table_prediction}, we see that by summing up sequence probabilities and predicting the most probable set,  Vinyals-RNN-uniform's performance  improves. But as  discussed earlier, training with the objective (\ref{eq:wrong_obj}) makes it impossible for the model to discover and concentrate on a particular natural label order (represented by a sequence). Overall Vinyals-RNN-uniform is not competitive even with the set-prediction enhancement. Between the above two extremes are Vinyals-RNN-max and set-RNN (we have omitted Vinyals-RNN-sample and Vinyals-RNN-max-direct here as they are similar to Vinyals-RNN-max). Both models are allowed to assign probability mass to a subset of sequences. Vinyals-RNN-max produces sharper sequence distributions than set-RNN, because  Vinyals-RNN-max has the incentive to allocate most of the probability mass to the most probable sequence due to the max operator in its training objective (\ref{eq:max_obj}). From Table~\ref{table_prediction}, one can see that set-RNN clearly benefits from summing up sequence probabilities and predicting the most probable set while Vinyals-RNN-max does not benefit much. Therefore, the sequence probability summation is best used in both training and prediction, as in our proposed method.
 
 Comparing 4 datasets in Table~\ref{table_prediction}, we also see that Slashdot and TheGuardian, which have larger label cardinalities (therefore more permutations for one set potentially), benefit more from predicting the most probable set than RCV1 and AAPD, which have smaller label cardinalities.
 
-% By design, Vinals-RNN-uniform and set-RNN could spread probabilities mass across many sequence permutations of the same set, Vinals-RNN-sample, Vinals-RNN-max and Vinals-RNN-max-direct tends to allocate most of the probability mass to the top sequence, and seq2seq basically only assigns probability to the sequence in the given order. 
+% By design, Vinyals-RNN-uniform and set-RNN could spread probabilities mass across many sequence permutations of the same set, Vinyals-RNN-sample, Vinyals-RNN-max and Vinyals-RNN-max-direct tends to allocate most of the probability mass to the top sequence, and seq2seq basically only assigns probability to the sequence in the given order. 
 
 % To further validate our intuition, 
 
@@ -169,7 +170,7 @@ Comparing 4 datasets in Table~\ref{table_prediction}, we also see that Slashdot 
 %\hspace{-2ex}
 \includegraphics[width=1.00\columnwidth]{figs/entropy.png}
 
-\caption{Entropy of sequence probability distribution for each model. Blue(\textbackslash)=Vinals-RNN-uniform, Orange(+)=set-RNN, Green($\times$)=Vinals-RNN-max, Red($\cdot$)=seq2seq-RNN.}
+\caption{Entropy of sequence probability distribution for each model. Blue(\textbackslash)=Vinyals-RNN-uniform, Orange(+)=set-RNN, Green($\times$)=Vinyals-RNN-max, Red($\cdot$)=seq2seq-RNN.}
 \label{fig:entropy}
 %\vspace{-6ex}
 \end{figure}

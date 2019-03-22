@@ -28,6 +28,7 @@
 \usepackage{mwe}
 \usepackage{subfig}
 \usepackage{amssymb}
+\usepackage{mathtools}
 
 \usepackage{latexsym}
 \usepackage{multirow}
@@ -41,12 +42,13 @@
 \usepackage{amsfonts}
 \usepackage{setspace}
 \newcommand{\kechen}[1]{\textcolor{red}{[Kechen]: {#1}}}
+\newcommand{\blue}[1]{\textcolor{green}{[Kechen]: {#1}}}
 \newcommand{\cheng}[1]{\textcolor{red}{[Cheng]: {#1}}}
 \newcommand{\softmax}{\textit{softmax}}
 \newcommand{\maximize}{\textit{maximize}}
 
 %\aclfinalcopy % Uncomment this line for the final submission
-%\def\aclpaperid{***} %  Enter the acl Paper ID here
+%\def\aclpaperid{123} %  Enter the acl Paper ID here
 
 %\setlength\titlebox{5cm}
 % You can expand the titlebox if you need extra space
@@ -58,16 +60,13 @@
 
 \title{Adapting RNN Sequence Prediction Model to Multi-label Set Prediction}
 
-\author{First Author \\
-  Affiliation / Address line 1 \\
-  Affiliation / Address line 2 \\
-  Affiliation / Address line 3 \\
-  {\tt email@domain} \\\And
-  Second Author \\
-  Affiliation / Address line 1 \\
-  Affiliation / Address line 2 \\
-  Affiliation / Address line 3 \\
-  {\tt email@domain} \\}
+  
+\author{Kechen Qin ~~~~ Cheng Li ~~~~ Virgil Pavlu ~~~~ Javed A. Aslam\\
+  %College of Computer and Information Science \\
+  Khoury College of Computer Sciences \\
+  Northeastern University\\
+{\tt qin.ke@husky.neu.edu} ~~~~ {\tt \{chengli,vip,jaa\}@ccs.neu.edu}\\
+   \\}
 
 \date{}
 
@@ -77,9 +76,10 @@
 \input{Abstract}
 \end{abstract}
 
+\kechen{check timestamp, use mid in conditional probability}
 
 \input{Introduction.tex}
-
+\kechen{reinforecement learning sample ground truth?}
 % \section{Related Work}
 % \label{sec:RelatedWork}
 % \input{related_work.tex}
@@ -90,6 +90,13 @@
 \input{case_analysis.tex}
 \input{conclusion.tex}
 
+\section{Acknowledgements}
+We thank reviewers for their helpful comments, 
+Krzysztof Dembczyński for his suggestions on related work, and
+Xiaofeng Yang for help on writing. This work
+has been generously supported through a grant from the
+Massachusetts General Hospital Physicians Organization,
+MGH 507222.
 % \section{backup}
 % \label{sec:backup}
 % \input{backup.tex}
