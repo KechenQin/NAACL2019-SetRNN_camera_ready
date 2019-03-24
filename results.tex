@@ -1,7 +1,7 @@
 \section{Results and Analysis}
 \label{sec:results}
 \subsection{Experimental Setup}
-\kechen{I have a slight concern about the scalability of this approach, both with varying beam size and number of labels. I'm curious about the computational complexities of the training and prediction methods provided in the Algorithm 2 and Algorithm 3 and how that compares with existing methods.}
+
 We test our proposed set-RNN method on 4 real-world datasets, RCV1-v2, Slashdot, TheGuardian, and Arxiv Academic Paper Dataset (AAPD) \cite{DBLP:journals/corr/abs-1806-04822}. We take the public RCV1-v2 release\footnote{\scriptsize\url{http://www.ai.mit.edu/projects/jmlr/papers/volume5/lewis04a/lyrl2004_rcv1v2_README.htm}} and randomly sample 50,000 documents. We crawl Slashdot and TheGuardian documents from their websites\footnote{\scriptsize Slashdot: \url{https://slashdot.org/} Note that there is another public Slashdot multi-label dataset \cite{read2009classifier} but we do not use that one because it is quite small. TheGuardian: \url{https://www.theguardian.com}  
 } and treat the official editor tags as ground truth. We also gather a list of user tags\footnote{\scriptsize \url{www.zubiaga.org/datasets/socialbm0311/}} for each document and treat them as additional features. For AAPD dataset, we follow the same train/test split as in \cite{DBLP:journals/corr/abs-1806-04822}. Table \ref{tab:stats} contains statistics of these four datasets. 
 \begin{table}[h]
@@ -126,12 +126,13 @@ In BR and PCC, logistic regressions with L1 and L2 regularizations are used as t
 % \textbf{Results.}
 
 \subsection{Experimental Results}
-
+\kechen{split this section into subsections?}
+\kechen{I have a slight concern about the scalability of this approach, both with varying beam size and number of labels. I'm curious about the computational complexities of the training and prediction methods provided in the Algorithm 2 and Algorithm 3 and how that compares with existing methods.}
 Table \ref{tab:main} shows the performance of different methods in terms of \emph{label-F1} and \emph{instance-F1}. The SGM results are taken directly from \cite{DBLP:journals/corr/abs-1806-04822}, and are originally reported only on AAPD dataset in terms of Hamming-Loss and Micro-F1. Definitions of these two metrics can be found in \cite{koyejo2015consistent}.  
 % The second best method is the variant of our method without the sequence probability summation at prediction. Comparing these two, we can see the benefit of summing up sequence probabilities at prediction time (the beam search for summation step does not add much computation). 
 
  
-Our method performs the best in all metrics on all datasets. All RNN based methods perform better than traditional methods BR, BR-support and PCC. Among the Vinyals-RNN variants, Vinyals-RNN-max and Vinyals-sample work the best and have similar performance. However, they have to be initialized by Vinyals-RNN-uniform. Otherwise, the training gets stuck in early stage and the performance degrades significantly. One can see the clear degradation by comparing the Vinyals-RNN-max row (with initialization) with the Vinyals-RNN-max-direct row (without initialization). By contrast, our training objective in set-RNN does not suffer from this issue and can serve as a stable stand alone training objective.
+Our method performs the best in all metrics on all datasets. \kechen{not hamming loss on AAPD} All RNN based methods perform better than traditional methods BR, BR-support and PCC. Among the Vinyals-RNN variants, Vinyals-RNN-max and Vinyals-sample work the best and have similar performance. However, they have to be initialized by Vinyals-RNN-uniform. Otherwise, the training gets stuck in early stage and the performance degrades significantly. One can see the clear degradation by comparing the Vinyals-RNN-max row (with initialization) with the Vinyals-RNN-max-direct row (without initialization). By contrast, our training objective in set-RNN does not suffer from this issue and can serve as a stable stand alone training objective.
 
 \begin{figure}[t]
 %\hspace{-2ex}
