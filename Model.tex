@@ -107,6 +107,8 @@ The transformation $p(\mathbf{y}|x)=\sum_{\mathbf{s}\in \pi(\mathbf{y})} p(\math
 %\textbf{Variant of beam search.} To obtain the top high probability sequences associated with a given set, beam search
 
 
+\kechen{The reviewer is correct in that our method takes more time than vanilla-RNN, in fact by a factor of 1.5*K. "K" because there are K permutations for each datapoint, and 1.5 (approximatively) because each epoch requires one more forward pass. However, the comparisons done in the paper against state of the art RNN, are fair on performance and run time: the baselines also use K* more permutations per datapoint, so compare to these our methosd is only 1.5 (or so) slower.}
+
 % \begin{algorithm}
 %     \SetKwInOut{Input}{Input}
 %     \SetKwInOut{Output}{Output}

@@ -163,7 +163,7 @@ At prediction time, one seeks to find the sequence with the highest probability 
 \maximize \sum_{n=1}^N \log p(\mathbf{s}^{(n)}|x^{(n)})
 \label{eq:standard_rnn}
 \end{align}
-\kechen{where $N$ is the total number of samples in the corpus and $n$ represents the $n$-th sample.} \newcite{vinyals2015order} proposes to dynamically choose during training the sequence order deemed as most probable by the current RNN model:
+\kechen{where $N$ is the total number of documents in the corpus and $n$ represents the $n^{\text{th}}$ document.} \newcite{vinyals2015order} proposes to dynamically choose during training the sequence order deemed as most probable by the current RNN model:
 \begin{align}
 \maximize \sum_{n=1}^N \max_{\mathbf{s}\in \pi(\mathbf{y}^{(n)})}\log p(\mathbf{s}|x^{(n)})
 \label{eq:max_obj}
