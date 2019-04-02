@@ -116,7 +116,7 @@ The transformation $p(\mathbf{y}|x)=\sum_{\mathbf{s}\in \pi(\mathbf{y})} p(\math
 %\textbf{Variant of beam search.} To obtain the top high probability sequences associated with a given set, beam search
 
 
-Both our method and the comparison sate-of-the-art RNN takes more time than a vanilla-RNN, by a factor of $K$, because there are $K$ permutations for each datapoint. Our proposed method is slower than the RNN baseline by a factor of 1.5 (approximatively) because each epoch requires one more forward pass. 
+Both our method and the comparison sate-of-the-art (Vinyals-RNN) take more time than a vanilla-RNN, by a factor of $K$, because there are $K$ permutations considered for each datapoint. Our proposed method is about as fast as the Vinyals-RNN methods, except for the Vinyals-RNN-uniform which is a bit faster (by a factor of 1.5) because its epochs do not run the additional forward pass. 
 
 % \begin{algorithm}
 %     \SetKwInOut{Input}{Input}
