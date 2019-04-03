@@ -3,14 +3,14 @@
 % \kechen{alleviate exposure bias? related work}
 Multi-label text classification is an important machine learning task wherein one must predict a set of labels to associate with a given document; for example, a news article might be tagged with labels \texttt{sport}, \texttt{football}, \texttt{2018 world cup}, and \texttt{Russia}. 
 Formally, we are given a set
-of label candidates $\mathcal{L}=\{1,2,...,L\}$,  and we aim to build a classifier 
+of label candidates $\mathcal{L}=\{1,2,...,L\}$, and we aim to build a classifier 
 which maps a document $x$ to a set of labels $\mathbf{y}\subset \mathcal{L}$. The label set $\mathbf{y}$ is typically written as a binary vector $\mathbf{y}\in \{0,1\}^L$, with each bit $y_{\ell}$
 indicating the presence or absence of a label.
 
 % A key research question in multi-label text classification is how to model and leverage the dependencies among labels.
-Naively, one could predict each label independently without considering label dependencies. This approach is called Binary Relevance \cite{DBLP:journals/pr/BoutellLSB04,tsoumakas2007multi}, and is widely used  due to its simplicity, but it often does not deliver good performance.  Intuitively, knowing some labels---such as \texttt{sport} and \texttt{football}---should make it easier to predict \texttt{2018 world cup} and then \texttt{Russia}.  There are several methods that try to capture label dependencies by building a joint probability estimation over all labels  $p(\mathbf{y}=(y_1,y_2,...,y_L)|x)$ \cite{ghamrawi2005collective,read2009classifier,DBLP:conf/icml/DembczynskiCH10,li2016conditional}. 
+Naively, one could predict each label independently without considering label dependencies. This approach is called Binary Relevance \cite{DBLP:journals/pr/BoutellLSB04,tsoumakas2007multi}, and is widely used due to its simplicity, but it often does not deliver good performance. Intuitively, knowing some labels---such as \texttt{sport} and \texttt{football}---should make it easier to predict \texttt{2018 world cup} and then \texttt{Russia}. There are several methods that try to capture label dependencies by building a joint probability estimation over all labels $p(\mathbf{y}=(y_1,y_2,...,y_L)|x)$ \cite{ghamrawi2005collective,read2009classifier,DBLP:conf/icml/DembczynskiCH10,li2016conditional}. 
 % \kechen{put BR before the introduction of dependency? because there is nothing about dependency by using BR} 
-The most popular approach, Probabilistic Classifier Chain (PCC) \cite{DBLP:conf/icml/DembczynskiCH10} learns and predicts labels one-by-one in a predefined fixed order: for each label, it uses one classifier to estimate the probability of that label given all previous labels predictions, $p(y_l|y_1,...,y_{l-1},x)$. PCC's well known drawback is that errors in early predictions tend to propagate to subsequent predictions, and can become massive when the total number of label candidates $L$ is large. 
+The most popular approach, Probabilistic Classifier Chain (PCC) \cite{DBLP:conf/icml/DembczynskiCH10} learns labels one-by-one in a predefined fixed order: for each label, it uses one classifier to estimate the probability of that label given all previous labels predictions, $p(y_l|y_1,...,y_{l-1},x)$. PCC's well known drawback is that errors in early probability estimations tend to affect subsequent predictions, and can become massive when the total number of label candidates $L$ is large. 
 % since PCC has to make a decision regarding each label candidate.
 
 
@@ -18,9 +18,9 @@ The most popular approach, Probabilistic Classifier Chain (PCC) \cite{DBLP:conf/
 
 
 
-Recurrent neural network (RNN) is originally designed to output a sequential structure, such as a sentence \cite{DBLP:conf/emnlp/ChoMGBBSB14}.  Recently, RNNs have also been applied to multi-label classification by mapping the label set to a sequence \cite{DBLP:conf/cvpr/WangYMHHX16,DBLP:journals/corr/ZhangWSZL16,DBLP:conf/icpr/JinN16,DBLP:conf/iccv/WangCLXL17,DBLP:journals/corr/abs-1709-08553,DBLP:conf/aaai/ChenCYW18,DBLP:journals/corr/abs-1806-04822}. In contrast to PCC where a binary decision is made for each label sequentially,  RNN only predicts the positive labels explicitly and therefore its decision chain length is equal to the number of positive labels, not the number of all labels.  Therefore RNN, while still suffers from early errors, propagates errors less than PCC. 
+Recurrent neural network (RNN) is originally designed to output a sequential structure, such as a sentence \cite{DBLP:conf/emnlp/ChoMGBBSB14}. Recently, RNNs have also been applied to multi-label classification by mapping the label set to a sequence \cite{DBLP:conf/cvpr/WangYMHHX16,DBLP:journals/corr/ZhangWSZL16,DBLP:conf/icpr/JinN16,DBLP:conf/iccv/WangCLXL17,DBLP:journals/corr/abs-1709-08553,DBLP:conf/aaai/ChenCYW18,DBLP:journals/corr/abs-1806-04822}. In contrast to PCC where a binary decision is made for each label sequentially, RNN only predicts the positive labels explicitly and therefore its decision chain length is equal to the number of positive labels, not the number of all labels. This makes RNN suffer less from early estimation errors than PCC. 
 
-% Recurrent  neural networks (RNNs) are neural network models with recurrent structures. They are able to model dynamic temporal behaviors and are widely used in sequence modeling tasks such as machine translations.
+% Recurrent neural networks (RNNs) are neural network models with recurrent structures. They are able to model dynamic temporal behaviors and are widely used in sequence modeling tasks such as machine translations.
 
 % \begin{align}
 % p(s_t=l|x) = [\softmax(\phi(f_t,h_t))]_l,
@@ -28,7 +28,7 @@ Recurrent neural network (RNN) is originally designed to output a sequential str
 
 
 
-%  RNN predictions \kechen{aka decoder} are typically done by maximizing the overall sequence probability, which is defined as $p(\mathbf{s}|x) = \prod_{t=1}^T p(s_t|x)$ \cheng{$\prod_{t=1}^T p(s_t|x,s_1,s_2,...,s_{t-1})$}.
+% RNN predictions \kechen{aka decoder} are typically done by maximizing the overall sequence probability, which is defined as $p(\mathbf{s}|x) = \prod_{t=1}^T p(s_t|x)$ \cheng{$\prod_{t=1}^T p(s_t|x,s_1,s_2,...,s_{t-1})$}.
 % % \begin{align}
 % % p(\mathbf{s}|x) = \prod_{t=1}^T p(s_t|x).
 % % \label{eq:rnn_prob}
@@ -63,65 +63,65 @@ Recurrent neural network (RNN) is originally designed to output a sequential str
 
 % \[ L(x,y) = -\sum_t logP(y_t|x,y<t)\]
 
-Both PCC and RNN rely heavily on label orders in training and prediction. In multi-label data, the labels are given as sets, not necessarily with natural order.  RNN defines a sequence probability (dynamically) while PCC defines set probability (statically, sets are built in a predefined order). Various ways of arranging sets as sequences have been explored:  ordered alphabetically,  by frequency, based on a label hierarchy, or according to some label ranking algorithm \cite{liu2015optimality}. The experimental results show that which order to choose can have a significant impact on learning and prediction \cite{vinyals2015order,DBLP:conf/nips/NamMKF17,DBLP:conf/aaai/ChenCYW18}. In the above example, starting label predictions sequence with \texttt{Russia}, while correct, would make the other predictions very difficult.
+Both PCC and RNN rely heavily on label orders in training and prediction. In multi-label data, the labels are given as sets, not necessarily with natural orders. RNN defines a sequence probability, while PCC defines set probability. Various ways of arranging sets as sequences have been explored: ordering alphabetically, by frequency, based on a label hierarchy, or according to some label ranking algorithm \cite{liu2015optimality}. Previous experimental results show that which order to choose can have a significant impact on learning and prediction \cite{vinyals2015order,DBLP:conf/nips/NamMKF17,DBLP:conf/aaai/ChenCYW18}. In the above example, starting label predictions sequence with \texttt{Russia}, while correct, would make the other predictions very difficult.
 
-Previous work has shown that it is possible to train an RNN on multi-label data without specifying the label order in advance. With special training objectives, RNN can explore different label orders and converge to some order automatically \cite{vinyals2015order}. In this paper we follow the same line of study: We consider how to adapt RNN sequence model to multi-label set prediction without specifying the label order. Specifically, we make the following  contributions:
+Previous work has shown that it is possible to train an RNN on multi-label data without specifying the label order in advance. With special training objectives, RNN can explore different label orders and converge to some order automatically \cite{vinyals2015order}. In this paper we follow the same line of study: We consider how to adapt RNN sequence model to multi-label set prediction without specifying the label order. Specifically, we make the following contributions:
 \begin{enumerate}
 \item We analyze existing RNN models proposed for multi-label prediction, and show that existing training and prediction objectives are not well justified mathematically and have undesired consequences in practice. 
 % \item We are the first to make a clear distinction between sequence probability and set probability (in this learning setup), and treat set probability naturally as the sum of all corresponding sequence probabilities.
 % \item Based on this set probability definition, we derive new training and prediction objectives that avoid the drawbacks of existing ones, and give the RNN model more freedom to automatically discover and utilize the best label orders.
-\item  We develop efficient approximate training and prediction methods. We propose new training and prediction objectives based on a principled notion of set probability. Our new formulation avoids the drawbacks of existing ones and gives  the  RNN  model  freedom  to discover the best label order. 
-\item We outperform state-of-the-art methods on several multi-label classification datasets.
+\item We develop efficient approximate training and prediction methods. We propose new training and prediction objectives based on a principled notion of set probability. Our new formulation avoids the drawbacks of existing ones and gives the RNN model freedom to discover the best label order. 
+\item We outperform state-of-the-art methods on several multi-label classification datasets. We release our datasets at \url{http://www.ccis.neu.edu/home/kechenqin}. 
 \end{enumerate}
  % In this paper, we instead train RNNs by directly maximizing the probability of the \emph{label set}, which is defined as the sum of all sequence (set-permutations) probabilities---thus not constrained by a particular order.
  % % This approach gives the model the freedom to explore different orders in training and prediction and leads to better prediction performance. 
  % Our results on benchmark data sets demonstrate that our proposed method outperforms state-of-the-art methods for the task of multi-label set prediction.
 
 \section{Mapping Sequences to Sets} 
-In this section, we formulate how existing approaches map sequences to sets, by writing down their objective functions using consistent notations. To review RNN designed for sequences, let $\mathbf{s}=(s_1,s_2,...,s_T)$ be an input sequence of outcomes, in a particular order, where $T$ is the maximum number of labels in a document; the order is often critical to the datapoint. An RNN model defines a probability distribution over all possible output sequences given the input in the form $p(\mathbf{s}=(s_1,s_2,...,s_T)|x)=\prod_{t=1}^T p(s_t|x,s_1,s_2,...,s_{t-1})$. To train the RNN model, one maximizes the likelihood of the ground truth sequence $p(\mathbf{s}=(s_1,s_2,...,s_T)|x)$.
+In this section, we describe how existing approaches map sequences to sets, by writing down their objective functions using consistent notations. To review RNN designed for sequences, let $\mathbf{s}=(s_1,s_2,...,s_T)$ be an input sequence of outcomes, in a particular order, where $s_t \in \{1,2,...,L\}$; the order is often critical to the datapoint. An RNN model defines a probability distribution over all possible output sequences given the input in the form $p(\mathbf{s}=(s_1,s_2,...,s_T)|x)=\prod_{t=1}^T p(s_t|x,s_1,s_2,...,s_{t-1})$. To train the RNN model, one maximizes the likelihood of the ground truth sequence. %$p(\mathbf{s}=(s_1,s_2,...,s_T)|x)$.
 
-At prediction time, one seeks to find the sequence with the highest probability $\mathbf{s}^*=\arg\max_\mathbf{s} p(\mathbf{s}|x)$, and this is usually implemented approximately with a beam search procedure \cite{lowerre1976harpy} (we modified into Algorithm \ref{alg:beam_combine}). The sequence history is encoded with an internal memory vector $h_t$ which is updated over time. RNN is also often equipped with the attention mechanism \cite{DBLP:journals/corr/BahdanauCB14}, which in each timestep $t$ puts different weights on different words (features) and thus effectively attends on a list of important words. The context vector $c_t$ is computed as the weighted average over the dense representation of these words to capture information from the document. The context $c_t$, the RNN memory $h_t$ at timestep $t$, and the encoding of previous label ${s_{t-1}}$ are all concatenated and used to model the label probability distribution at time $t$ as $p(s_t|x,s_1,s_2,...,s_{t-1}) \sim  \softmax(\phi(c_t,h_t,s_{t-1}))$, where $\phi$ is a non-linear function, and $\softmax$ is the normalized exponential function generalizing binary logistic regression. %Other variants of RNN, such as sequence to sequence encoder-decoder structure \cite{DBLP:conf/emnlp/ChoMGBBSB14,DBLP:conf/nips/NamMKF17}, further take into account the word order in the documents. \kechen{remove last sentence?}
+At prediction time, one seeks to find the sequence with the highest probability $\mathbf{s}^*=\arg\max_\mathbf{s} p(\mathbf{s}|x)$, and this is usually implemented approximately with a beam search procedure \cite{lowerre1976harpy} (we modified into Algorithm \ref{alg:beam_combine}). The sequence history is encoded with an internal memory vector $h_t$ which is updated over time. RNN is also often equipped with the attention mechanism \cite{DBLP:journals/corr/BahdanauCB14}, which in each timestep $t$ puts different weights on different words (features) and thus effectively attends on a list of important words. The context vector $c_t$ is computed as the weighted average over the dense representation of important words to capture information from the document. The context $c_t$, the RNN memory $h_t$ at timestep $t$, and the encoding of previous label ${s_{t-1}}$ are all concatenated and used to model the label probability distribution at time $t$ as $p(s_t|x,s_1,s_2,...,s_{t-1}) \sim \softmax(\phi(c_t,h_t,s_{t-1}))$, where $\phi$ is a non-linear function, and $\softmax$ is the normalized exponential function. %Other variants of RNN, such as sequence to sequence encoder-decoder structure \cite{DBLP:conf/emnlp/ChoMGBBSB14,DBLP:conf/nips/NamMKF17}, further take into account the word order in the documents. \kechen{remove last sentence?}
 
 
 % \begin{algorithm}
-%     \SetKwInOut{Input}{Input}
-%     \SetKwInOut{Output}{Output}
+% \SetKwInOut{Input}{Input}
+% \SetKwInOut{Output}{Output}
 %
-%     % \underline{function Beam\_Search\_for\_Given\_Set} $(\mathbf{y},m)$\;
-%     \Input{Instance $x$}
-%     \Output{A list of top sequences and the associated probabilities}
-%     Initialize $K$ empty sequences $\mathbf{s}_1$,$\mathbf{s}_2$,...,$\mathbf{s}_K$ \\
-%     \While {not all $K$ sequences end with the STOP symbol}{
-%         \For {each sequence $\mathbf{s}_k$}{
-%         \eIf{sequence $\mathbf{s}_k$ does not end with the STOP symbol}{
-%         \For {each label $\ell$ in $\mathcal{L}$}{
-%         \If{sequence $\mathbf{s}_k$ does not contain $\ell$}{
-%         generate new candidate sequence by combining $\mathbf{s}_k$ and $\ell$
-%         }
+% % \underline{function Beam\_Search\_for\_Given\_Set} $(\mathbf{y},m)$\;
+% \Input{Instance $x$}
+% \Output{A list of top sequences and the associated probabilities}
+% Initialize $K$ empty sequences $\mathbf{s}_1$,$\mathbf{s}_2$,...,$\mathbf{s}_K$ \\
+% \While {not all $K$ sequences end with the STOP symbol}{
+%  \For {each sequence $\mathbf{s}_k$}{
+%  \eIf{sequence $\mathbf{s}_k$ does not end with the STOP symbol}{
+%  \For {each label $\ell$ in $\mathcal{L}$}{
+%  \If{sequence $\mathbf{s}_k$ does not contain $\ell$}{
+%  generate new candidate sequence by combining $\mathbf{s}_k$ and $\ell$
+%  }
 %
-%         }
-%                 generate new candidate sequence by combining $\mathbf{s}_k$ and the STOP symbol\\}{
-%         consider $\mathbf{s}_k$ itself as a candidate sequence
-%         }
+%  }
+%   generate new candidate sequence by combining $\mathbf{s}_k$ and the STOP symbol\\}{
+%  consider $\mathbf{s}_k$ itself as a candidate sequence
+%  }
 %
 %
-%             % $\mathbf{y}_t = \mathbf{y} - set(s_i)$ \\
-%             % \For {$j=0;j<k_3;$}{
-%             % \tcp{$l_j$ is the $j$-th most possible label inferred at timestep $t$}
-%             %     \If{$l_j \in \mathbf{y}_t$}{
-%             %         $s_{ij} \leftarrow s_i + l_j$\\
-%             %         $j++$\\
-%             %     }
-%             % }
-%         }
+%  % $\mathbf{y}_t = \mathbf{y} - set(s_i)$ \\
+%  % \For {$j=0;j<k_3;$}{
+%  % \tcp{$l_j$ is the $j$-th most possible label inferred at timestep $t$}
+%  % \If{$l_j \in \mathbf{y}_t$}{
+%  %  $s_{ij} \leftarrow s_i + l_j$\\
+%  %  $j++$\\
+%  % }
+%  % }
+%  }
 %
-%     Select the top $K$ sequences among all candidates with the highest probability and assign them to $\mathbf{s}_1$,$\mathbf{s}_2$,...,$\mathbf{s}_K$
-%         % \tcp{Prune sequence list to }
-%         % $s \leftarrow s_{ij}[:k_3]$
-%     }
-%     \Return{sequence list $\mathbf{s}_1$,$\mathbf{s}_2$,...,$\mathbf{s}_K$ and the associated probabilities}
-%     \caption{RNN\_Beam\_Search \cite{lowerre1976harpy}}
-%     \label{alg:beam}
+% Select the top $K$ sequences among all candidates with the highest probability and assign them to $\mathbf{s}_1$,$\mathbf{s}_2$,...,$\mathbf{s}_K$
+%  % \tcp{Prune sequence list to }
+%  % $s \leftarrow s_{ij}[:k_3]$
+% }
+% \Return{sequence list $\mathbf{s}_1$,$\mathbf{s}_2$,...,$\mathbf{s}_K$ and the associated probabilities}
+% \caption{RNN\_Beam\_Search \cite{lowerre1976harpy}}
+% \label{alg:beam}
 % \end{algorithm}
 
 
@@ -137,7 +137,7 @@ At prediction time, one seeks to find the sequence with the highest probability 
 \hspace{-2ex}
  \begin{tabular}{|c|c|c|}
  \hline
- Methods	&Train objective	& Prediction\\
+ Method	&Training objective	& Prediction objective\\
  \hline
  seq2seq-RNN & $\maximize \sum_{n=1}^N \log p(\mathbf{s}^{(n)}|x^{(n)})$ & $\hat{\mathbf{y}}=set(\mathbf{s}^*)$, $\mathbf{s}^*=\arg\max_{\mathbf{s}} p(\mathbf{s}|x)$\\
  \hline 
@@ -151,25 +151,27 @@ At prediction time, one seeks to find the sequence with the highest probability 
  \hline
  \end{tabular}
  }
- \caption{Comparison between previous and our \emph{set-RNN} training and prediction objectives} \label{tab_objs}
+ \caption{Comparison between previous and our \emph{set-RNN} training and prediction objectives.} \label{tab_objs}
  \end{center}
  \end{table*}
  
  
- To apply RNNs to multi-label problems, one has to map the given set of labels $\mathbf{y}$ to a sequence $\mathbf{s}=(s_1,s_2,...,s_T)$, on training documents. This is usually obtained by writing the label set in a globally fixed order (e.g.\ by label frequency), similar to PCC.
+ To apply RNN to multi-label problems, one approach is to map the given set of labels $\mathbf{y}$ to a sequence $\mathbf{s}=(s_1,s_2,...,s_T)$, on training documents. This is usually obtained by writing the label set in a globally fixed order (e.g.\ by label frequency), as in PCC.
  % After mapping the ground truth set $\mathbf{y}^{(n)}$ to a sequence $\mathbf{s}^{(n)}$ with the chosen order for each training instance $(x^{(n)},\mathbf{y}^{(n)})$,
- Once mapping is done, RNN are trained with the standard maximum likelihood objective \cite{DBLP:conf/nips/NamMKF17}: 
+ Once the mapping is done, RNN is trained with the standard maximum likelihood objective \cite{DBLP:conf/nips/NamMKF17}: 
 \begin{align}
 \maximize \sum_{n=1}^N \log p(\mathbf{s}^{(n)}|x^{(n)})
 \label{eq:standard_rnn}
 \end{align}
-where $N$ is the total number of documents in the corpus. \newcite{vinyals2015order} proposes to dynamically choose during training the sequence order deemed as most probable by the current RNN model:
+where $x^{(n)}$ is the $n$-th document and $N$ is the total number of documents in the corpus. 
+
+\newcite{vinyals2015order} proposes to dynamically choose during training the sequence order deemed as most probable by the current RNN model:
 \begin{align}
 \maximize \sum_{n=1}^N \max_{\mathbf{s}\in \pi(\mathbf{y}^{(n)})}\log p(\mathbf{s}|x^{(n)})
 \label{eq:max_obj}
 %\vspace{-2ex}
 \end{align}
-where the $\pi(\mathbf{y}^{(n)})$ stands for all  permutations of $\mathbf{y}^{(n)}$. This eliminates the need to manually specify the label order.
+where the $\pi(\mathbf{y}^{(n)})$ stands for all permutations of the label set $\mathbf{y}^{(n)}$. This eliminates the need to manually specify the label order.
 However, as noticed by the authors, this objective cannot be used in the early training stages: the early order choice (often random) is reinforced by this objective and can be stuck upon permanently. To address this issue, \newcite{vinyals2015order}~also proposes two smoother alternative objectives to initialize the model training:
 
 The authors suggest that one first consider many random orders for each label set in order to explore the space:
@@ -182,9 +184,9 @@ After that, one can sample sequences following the model predictive distribution
 \begin{align}
 \maximize \sum_{n=1}^N \sum_{\mathbf{s}\in \pi(\mathbf{y}^{(n)})}p(\mathbf{s}|x^{(n)})\log p(\mathbf{s}|x^{(n)})
 \label{eq:sample_obj}
-\end{align}  
+\end{align} 
 
-In training, one needs to  schedule the transition among these objectives, a rather tricky endeavor. At prediction time, one needs to find the most probable set. This is done by (approximately) finding the most probable sequence $\mathbf{s}^*=\arg\max_\mathbf{s} p(\mathbf{s}|x)$ and treating it as a set $\hat{\mathbf{y}}=set(\mathbf{s}^*)$. With a large number of sequences, it is quite possible that the argmax has actually a low probability, which can lead to neglecting important information when we ignore sequences other than the top one.
+In training, one needs to schedule the transition among these objectives, a rather tricky endeavor. At prediction time, one needs to find the most probable set. This is done by (approximately) finding the most probable sequence $\mathbf{s}^*=\arg\max_\mathbf{s} p(\mathbf{s}|x)$ and treating it as a set $\hat{\mathbf{y}}=set(\mathbf{s}^*)$. With a large number of sequences, it is quite possible that the argmax has actually a low probability, which can lead to neglecting important information when we ignore sequences other than the top one.
 
 % containing all labels in the sequence $s^*$ as the predicted set.
 
